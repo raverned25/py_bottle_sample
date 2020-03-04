@@ -1,37 +1,31 @@
-from bottle import Bottle, run, template, \
-    get, post, request, route, debug, static_file
+import functools
+from bottle import Bottle, run, debug, static_file, template, jinja2_view
+from bottle import get, post, request, route
 
 import os, sys
+
+
 
 dirname = os.path.dirname(sys.argv[0])
 
 app = Bottle()
 
-
-
-# # Static Routes
-# @get("/static/css/<filepath:re:.*\.css>")
-# def css(filepath):
-#     return static_file(filepath, root="static/css")
-
-# @get("/static/font/<filepath:re:.*\.(eot|otf|svg|ttf|woff|woff2?)>")
-# def font(filepath):
-#     return static_file(filepath, root="static/font")
-
-# @get("/static/img/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
-# def img(filepath):
-#     return static_file(filepath, root="static/img")
-
-# @get("/static/js/<filepath:re:.*\.js>")
-# def js(filepath):
-#     return static_file(filepath, root="static/js")
-
-
+view = functools.partial(jinja2_view, template_lookup=['views'])
 
 
 @app.route('/static/css/<filename:re:.*\.css>')
 def css(filename):
 	return static_file(filename, root='static/css')
+
+
+@app.route("/static/font/<filepath:re:.*\.(eot|otf|svg|ttf|woff|woff2?)>")
+def font(filepath):
+    return static_file(filepath, root="static/font")
+
+@app.route("/static/img/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
+def img(filepath):
+    return static_file(filepath, root="static/img")
+
 
 @app.route('/static/js/<filename:re:.*\.js>')
 def js(filename):
@@ -40,27 +34,28 @@ def js(filename):
 
 
 @app.route('/')
+@app.route('/home')
+@view('index.html')
 def index():
-    
-    print(dirname)
-    data = {"developer_name":"Ahmedur Rahman Shovon", "developer_organization":"Datamate Web Solutions"}
-    
-    return template('index', data = data)
+    data = {"menu":"home"}
+    return data
 
-    
-    # return template('body')
-    # return template('index', name='John')
 
+
+
+@app.route('/about')
+@view('about.html')
+def index():
+    data = {"menu":"about"}
+    return data
 
 @app.route('/login') # or @route('/login')
+@view('login.html')
 def login():
-    return '''
-        <form action="/login" method="post">
-            Username: <input name="username" type="text" />
-            Password: <input name="password" type="password" />
-            <input value="Login" type="submit" />
-        </form>
-    '''
+
+    data = {"menu" : "login"}
+
+    return data
 
 @app.route('/login', method='POST') # or @route('/login', method='POST')
 def do_login():
@@ -74,4 +69,4 @@ def do_login():
 
 
 if __name__ == '__main__':
-    app.run(reloader=True, debug=True)    
+    app.run(reloader=True, debug=False)    
